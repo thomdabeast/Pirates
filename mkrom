@@ -1,0 +1,10 @@
+#!/bin/bash
+DIR=`pwd`
+
+arm-none-eabi-gcc -I "$DIR" -c $1 -mthumb-interwork -mthumb -O2 -o main.o
+arm-none-eabi-gcc -I "$DIR" main.o -mthumb-interwork -mthumb -specs=gba.specs -o main.elf
+arm-none-eabi-objcopy -v -O binary main.elf main.gba
+gbafix main.gba
+
+rm *.o
+rm *.elf
