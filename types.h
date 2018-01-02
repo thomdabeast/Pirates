@@ -16,6 +16,7 @@ typedef	volatile uint32	vu32;	/**< volatile Unsigned 32 bit value	*/
 typedef	volatile char	vs8;	/**< volatile Signed 8 bit value	*/
 typedef	volatile short	vs16;	/**< volatile Signed 8 bit value	*/
 typedef	volatile int	vs32;	/**< volatile Signed 8 bit value	*/
+typedef char boolean;
 
 //Atribute0 stuff
 #define ROTATION_FLAG           0x100
@@ -75,6 +76,9 @@ typedef	volatile int	vs32;	/**< volatile Signed 8 bit value	*/
 #define SCREEN_H      160
 
 #define REG_DISPCNT    *(u32*)0x4000000
+
+#define true (boolean)1
+#define false (boolean)0
 
 
 typedef enum KEYPAD_BITS {

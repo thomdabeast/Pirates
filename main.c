@@ -1,7 +1,7 @@
 #include "types.h"
 #include "regs.h"
 #include "sprites/ship.h"  //sprite data and palette made with pcx2sprite
-#include "sprites/ball.h"
+//#include "sprites/ball.h"
 #include "backgrounds/intro.h"
 
 //makes a table that contains OAM info about all 128 sprites
@@ -79,9 +79,10 @@ void EraseScreen(void)
 int main()
 {
       u16 loop;      
-      u16 x = 10;    
-      u16 y = 50;
+      u16 x = 50, ballx = 240;    
+      u16 y = 50, bally = 160;
       u16 frame = 0, waveSwell = 1;
+      boolean ballshoot = false;
 
       SetMode(MODE_4 | BG2_ENABLE);
 
@@ -105,16 +106,30 @@ int main()
 
       sprites[0].attribute[0] = COLOR_256 | SQUARE | y;  //set 256 colors, shape and y-coordinate
       sprites[0].attribute[1] = SIZE_32 | x;  //set shape and x-coordinate
+      sprites[0].attribute[2] = 512;
 
       for (loop = 0; loop < 256; ++loop)
       {
             OBJ_PaletteMem[loop] = shipPalette[loop];
       }
 
+
+      u16  n = 512;
+	u16 *c = (u16 *) (CHR_BASE + 32*n);
+
       for (loop = 0; loop < 32*16; ++loop)
       {
-            OAM_Data[loop] = shipData[loop];
+            *(c++) = shipData[loop];
       }
+
+      for (loop = 0; loop < 8*4; ++loop)
+      {
+            *(c++) = ballData[loop];
+      }
+
+      sprites[1].attribute[0] = COLOR_256 | SQUARE | ballx;
+      sprites[1].attribute[1] = SIZE_8 | bally;
+      sprites[1].attribute[2] = sprites[0].attribute[2] + 32;
            
       while(1)  //main loop
       {
@@ -136,27 +151,40 @@ int main()
             }
             if(!(*INPUT & KEY_UP)) {
                   --y;
-                  if (y > SCREEN_H -32)
+                  if (y <= 1)
                   {
-                        y = SCREEN_H-32;
-                  }  
+                        y = 1;
+                  } 
             }
             if(!(*INPUT & KEY_DOWN)) {
                   ++y;
-                  if (y <= 0)
+                  if (y > SCREEN_H -32)
                   {
-                        y = 0;
-                  }
+                        y = SCREEN_H-32;
+                  } 
             }
             if (!(*INPUT & KEY_A))
             {
-            	
+                  ballshoot = true;
+                  ballx = x;
+                  bally = y;
             }
 
             uint16 reg0 = sprites[0].attribute[0] & 0XFF00, reg1 = sprites[0].attribute[1] & 0XFE00;
 
             sprites[0].attribute[0] = (y + waveSwell) | reg0;
             sprites[0].attribute[1] = x | reg1;
+
+            if(ballshoot) {
+                  bally--;
+                  if (bally <= 0)
+                  {
+                        ballshoot = false;
+                        bally = 240;
+                  }
+                  sprites[1].attribute[0] = (sprites[1].attribute[0] & 0xFF00) | bally;
+                  sprites[1].attribute[1] = (sprites[1].attribute[1] & 0xFE00) | ballx;
+            }
 
 
             if((frame = (frame+1) % 40) == 0) waveSwell *= -1;
